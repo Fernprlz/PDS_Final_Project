@@ -9,6 +9,7 @@ import org.galactic.empire.secret.software.licensing.io.InitialLicenseRequestJSO
 import org.galactic.empire.secret.software.licensing.io.LicenseJSONParser;
 import org.galactic.empire.secret.software.licensing.io.LicenseRequestJSONParser;
 import org.galactic.empire.secret.software.licensing.store.LicensesStore;
+import org.galactic.empire.secret.software.licensing.utils.SHA256Hasher;
 
 public class LicenseManager implements iLicenseManager {
 
@@ -90,18 +91,48 @@ public class LicenseManager implements iLicenseManager {
 		LicenseJSONParser myParser = new LicenseJSONParser(); // Use the right JSON
 		License LicenseToRemove = (License) myParser.Parse(LicenseFilePath);
 		// TODO: REMOVE IT FROM THE LICENSE STORE
-		myStore.Remove(LicenseToRemove);
+		myStore.Remove(LicenseToRemove); //throws lmexception creo
 		// TODO: DO SHIT WITH EXCEPTIONS
 		
 		// TODO: return proper shit
-		return;
+		return null;
 	}
 	
-	public String UpdateLicense (String LicenseFilePath) throws LMException{
+	
+	public String UpdateLicense (String LicenseFilePath, int days) throws LMException{
 		String result = null;
+		// TODO: check that the days parameter is valid, throw exception if not
 		
+		// Extends the validity of a license
+		// Get the license
+		LicenseJSONParser myParser = new LicenseJSONParser();
+		License LicenseToUpdate = (License) myParser.Parse(LicenseFilePath);
+		myStore.Find(LicenseToUpdate);
+		if (LicenseToUpdate != null) {
+			SHA256Hasher mySignatureGenerator = new SHA256Hasher();
+			
+			// change the expiration date
+			LicenseToUpdate.updateDays(days);
+			// check and change status if needed
+			if (LicenseToUpdate.getRemainingDays() <= 0) {
+				LicenseToUpdate.setActive(false);
+			} else {
+				LicenseToUpdate.setActive(true);
+			}
+			// generate new hash and update it (old LicenseRequest + New Days)
+			/**TODO: this means that the request date is updated to old request + literally, the new days it's active?? i suppose so - semantics**/
+			result = mySignatureGenerator.generateHash(LicenseToUpdate.getRequestData() + ";" + LicenseToUpdate.getDays());
+			// put the signature in the license
+			LicenseToUpdate.setSignature(result);
+			// TODO: create a JSON with the data
+			// uses json methods like STRINGtoJSON or something
+			
+		}
+
 		
-		
+		// ??? Generates a text file with the data of the new license??? -> JSON??
+
+		// Returns the new good hash/signature
 		return result;
 	}
 }

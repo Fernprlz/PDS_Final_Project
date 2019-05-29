@@ -63,10 +63,33 @@ public class License {
 		return signature;
 	}
 	
+	/**
+	 * Getter for the new added field: valid
+	 * @return
+	 */
 	public boolean getActive() {
 		return active;
 	}
 	
+	/**
+	 * Getter for the field 'days';
+	 */
+	public int getDays() {
+		return this.days;
+	}
+	
+	/**
+	 * Updates the days field
+	 * @param newDays
+	 */
+	public void updateDays(int newDays) {
+		days += newDays;
+	}
+	
+	/**
+	 * Modified isValid method that considers activeness
+	 * @return
+	 */
 	public boolean IsValid () {
 		// In the method we explore conditions to refute falseness
 		boolean result = false;
@@ -83,8 +106,40 @@ public class License {
 		return result;
 	}
 	
+	/**
+	 * Setter for the new added field: valid
+	 * @param value
+	 */
 	public void setActive(boolean value) {
 		this.active = value;
+	}
+	
+	/**
+	 * Setter that allows to update the 'days' field.
+	 * @param newDays
+	 */
+	public void setDays(int newDays) {
+		this.days = newDays;
+	}
+	
+	/**
+	 * Setter that allosw to update the 'signature' field.
+	 * @param signature
+	 */
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+	
+	/**
+	 * Getter that returns the relevant data to generate a new signature.
+	 * @return
+	 */
+	public String getRequestData() {
+		String result = LicenseRequestData.getStationName() + ";" + LicenseRequestData.getPersoninCharge() + ";" +
+						LicenseRequestData.getEmail() + ";" + LicenseRequestData.getMachineName() + ";" + 
+						LicenseRequestData.getTypeofLicense() + ";" + LicenseRequestData.getTypeofLicense() + ";" + 
+						LicenseRequestData.getUUID();
+		return result;
 	}
 
 }

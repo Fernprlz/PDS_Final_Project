@@ -8,10 +8,10 @@ import org.galactic.empire.secret.software.licensing.utils.MD5Hasher;
 
 public class LicenseRequest {
 	private String StationName;
-	private  String PersoninCharge; 
-	private  String Email;
-	private  String MachineName;
-	private  String TypeofLicense;
+	private String PersoninCharge; 
+	private String Email;
+	private String MachineName;
+	private String TypeofLicense;
 	private String UUID;
 	private long  requestDateUnixTime;
 	

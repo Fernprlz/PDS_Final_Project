@@ -33,7 +33,7 @@ public interface iLicenseManager {
 	// input required for the functionality
 	// LMException represents the possible error situations
 	
-	String UpdateLicense (String LicenseFilePath) throws LMException;
+	String UpdateLicense (String LicenseFilePath, int days) throws LMException;
 	// String represents the upgraded hash for the license being updated.
 	// String FilePathToLicenseInformation represents the path to the 
 	// file including the input required for the functionality
