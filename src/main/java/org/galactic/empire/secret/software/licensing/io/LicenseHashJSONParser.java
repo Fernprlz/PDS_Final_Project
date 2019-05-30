@@ -2,7 +2,6 @@ package org.galactic.empire.secret.software.licensing.io;
 
 import javax.json.JsonObject;
 
-import org.galactic.empire.secret.software.licensing.data.License;
 import org.galactic.empire.secret.software.licensing.exceptions.LMException;
 
 public class LicenseHashJSONParser extends JSONParser implements iJSONParser {

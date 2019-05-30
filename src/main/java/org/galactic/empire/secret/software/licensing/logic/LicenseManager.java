@@ -1,12 +1,5 @@
 package org.galactic.empire.secret.software.licensing.logic;
 
-
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-
 import org.galactic.empire.secret.software.licensing.iLicenseManager;
 import org.galactic.empire.secret.software.licensing.data.License;
 import org.galactic.empire.secret.software.licensing.data.LicenseRequest;
@@ -16,7 +9,6 @@ import org.galactic.empire.secret.software.licensing.io.LicenseRequestHashJSONPa
 import org.galactic.empire.secret.software.licensing.io.LicenseJSONParser;
 import org.galactic.empire.secret.software.licensing.io.LicenseRequestJSONParser;
 import org.galactic.empire.secret.software.licensing.io.LicenseHashJSONParser;
-import org.galactic.empire.secret.software.licensing.io.JSONParser;
 import org.galactic.empire.secret.software.licensing.store.LicensesStore;
 import org.galactic.empire.secret.software.licensing.utils.SHA256Hasher;
 
@@ -99,20 +91,41 @@ public class LicenseManager implements iLicenseManager {
 		// Copy data into a license that will be returned
 		return licenseFound;
 	}
-	
-	public boolean verifyHash() {
-		// TODO
-		return true;	
+
+	public boolean verifyHash(String LicenseFilePath) throws LMException {
+		// Generate an instance of the parser and the license to return
+		LicenseRequestHashJSONParser myParser = new LicenseRequestHashJSONParser();
+		License LicenseToVerify = null;
+		try {
+			LicenseToVerify = (License) myParser.Parse(LicenseFilePath);
+		} catch (LMException e) {
+			System.out.println("Error: Invalid input");
+		}
+		// Generate the signature (LicenseHash)
+		SHA256Hasher mySignatureGenerator = new SHA256Hasher();
+		String goodHash = null;
+		try {
+			// Generate new hash and update it in the license (old LicenseRequest + New Days)
+			goodHash = mySignatureGenerator.generateHash(LicenseToVerify.getRequestData());
+		} catch (LMException e) {
+			System.out.println("Error: Hash generation failed");
+		}
+		
+		return goodHash.equals(LicenseToVerify.getSignature());	
 	}
 
-	public License RevokeLicense(String LicenseFilePath) throws LMException{
+	public License RevokeLicense(String LicenseFilePath) throws LMException {
 		// Generate an instance of the parser and the license object to return
-		LicenseHashJSONParser myParser = new LicenseHashJSONParser(); // Use the right JSON
+		LicenseHashJSONParser myParser = new LicenseHashJSONParser(); 
 		String signatureToSearch = null;
+		
+		if (!verifyHash(LicenseFilePath)) {
+			throw new LMException("Error: Invalid LicenseHash");
+		}
 		// Parse the input and search the storage list.
 		try {
 			signatureToSearch = (String) myParser.Parse(LicenseFilePath);
-			
+
 		} catch (LMException e) {
 			System.out.println("Error: Invalid input format");
 		}
@@ -131,7 +144,6 @@ public class LicenseManager implements iLicenseManager {
 		}
 		return LicenseToRevoke;
 	}
-
 
 	public String UpdateLicense (String LicenseFilePath, int days) throws LMException{
 		String result = null;
@@ -158,8 +170,12 @@ public class LicenseManager implements iLicenseManager {
 				// Update the days left until expiration
 				LicenseToUpdate.updateDays(days);
 
-				// Generate new hash and update it in the license (old LicenseRequest + New Days)
-				result = mySignatureGenerator.generateHash(LicenseToUpdate.getRequestData() + ";" + LicenseToUpdate.getDays());
+				try {
+					// Generate new hash and update it in the license (old LicenseRequest + New Days)
+					result = mySignatureGenerator.generateHash(LicenseToUpdate.getRequestData() + ";" + LicenseToUpdate.getDays());
+				} catch (LMException e) {
+					System.out.println("Error: Hash generation failed");
+				}
 				LicenseToUpdate.setSignature(result);
 				myStore.Save();
 			}
