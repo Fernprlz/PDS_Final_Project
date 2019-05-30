@@ -99,5 +99,16 @@ public class LicensesStore {
 	    }
 		return result;
 	}
+	
+	public License FindLicenseBySignature (String signature) {
+		License result = null;
+		this.Load();
+		for (License lic : this.licensesList) {
+			if (lic.getSignature().equals(signature)) {
+				result = lic;
+			}
+		}
+		return result;
+	}
 
 }

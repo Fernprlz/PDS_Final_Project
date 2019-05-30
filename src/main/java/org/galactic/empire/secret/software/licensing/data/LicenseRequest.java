@@ -54,7 +54,7 @@ public class LicenseRequest {
 	}
 	
 	private long verifyRequestDate (long date) throws LMException {
-		if (date>=1 && (date - 999999999)>0) {
+		if (date>=1 && (date - 999999999) > 0) {
 		}
 		else {
 			throw new LMException("Request Date is wrong");
