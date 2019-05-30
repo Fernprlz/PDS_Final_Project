@@ -96,28 +96,28 @@ public class LicenseManager implements iLicenseManager {
 			licenseFound.setActive(false);
 		}
 
-		// TODO: Manage exceptions
-		// - Input file has any problem related to its format or its access
-		// - The hash code representing the license doesn't correspond the input values
-		// - No hash code representing any of the licenses matches the hash code as input value.
-		// TODO: figure out what have i misunderstood
-
 		// Copy data into a license that will be returned
 		return licenseFound;
+	}
+	
+	public boolean verifyHash() {
+		// TODO
+		return true;	
 	}
 
 	public License RevokeLicense(String LicenseFilePath) throws LMException{
 		// Generate an instance of the parser and the license object to return
 		LicenseHashJSONParser myParser = new LicenseHashJSONParser(); // Use the right JSON
-		License LicenseToRevoke = null;
+		String signatureToSearch = null;
 		// Parse the input and search the storage list.
 		try {
-			String signatureToSearch = (String) myParser.Parse(LicenseFilePath);
-			LicenseToRevoke = myStore.FindLicenseBySignature(signatureToSearch); 
+			signatureToSearch = (String) myParser.Parse(LicenseFilePath);
+			
 		} catch (LMException e) {
 			System.out.println("Error: Invalid input format");
 		}
-
+		// Search for the license 
+		License LicenseToRevoke = myStore.FindLicenseBySignature(signatureToSearch); 
 		// Interpret the result of the search
 		if (LicenseToRevoke == null) {
 			throw new LMException("Error: No license corresponding to the specified signature");
@@ -135,11 +135,19 @@ public class LicenseManager implements iLicenseManager {
 
 	public String UpdateLicense (String LicenseFilePath, int days) throws LMException{
 		String result = null;
-		// TODO: check that the days parameter is valid, throw exception if not
-		if (days > 0) {
+		// Check that the days parameter is valid, throw exception if not
+		if (days <= 0) {
+			throw new LMException ("Error: Invalid days");
+		} else {
 			// Get the license
 			LicenseHashJSONParser myParser = new LicenseHashJSONParser();
-			String signatureToSearch = (String) myParser.Parse(LicenseFilePath);
+			String signatureToSearch = null;
+			try {
+				signatureToSearch = (String) myParser.Parse(LicenseFilePath);
+			} catch (LMException e) {
+				System.out.println("Error: Invalid input format");
+			}
+			// Search for the license to update
 			License LicenseToUpdate = myStore.FindLicenseBySignature(signatureToSearch);
 			if (LicenseToUpdate == null) {
 				throw new LMException("Error: No license corresponding to the specified signature");
@@ -149,31 +157,16 @@ public class LicenseManager implements iLicenseManager {
 
 				// Update the days left until expiration
 				LicenseToUpdate.updateDays(days);
-				// Check and change status if needed TODO -> needed?
-				if (LicenseToUpdate.getRemainingDays() <= 0) {
-					LicenseToUpdate.setActive(false);
-				} else {
-					LicenseToUpdate.setActive(true);
-				}
 
 				// Generate new hash and update it in the license (old LicenseRequest + New Days)
 				result = mySignatureGenerator.generateHash(LicenseToUpdate.getRequestData() + ";" + LicenseToUpdate.getDays());
-				// Change the signature to the newly generated hash.
 				LicenseToUpdate.setSignature(result);
-				// Create JSON with the information of the License
-				try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("GeneratedJSONAfterUpdate.JSON"), "utf-8"))) {
-					writer.write(LicenseToUpdate.licenseDataToJSONString());
-				} catch (IOException e) {
-					System.out.println("Error creating the JSON file.");
-				}
-
+				myStore.Save();
 			}
-		} else {
-			throw new LMException ("Error: Invalid days");
-		}
 
-		// Returns the new signature or null if the specified one doesn't exist.
-		return result;
+			// Returns the new signature or null if the specified one doesn't exist.
+			return result;
+		}
 	}
 }
 

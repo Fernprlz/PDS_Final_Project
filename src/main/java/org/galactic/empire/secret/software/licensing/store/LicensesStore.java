@@ -74,7 +74,7 @@ public class LicensesStore {
 		}
 	}
 	
-	private void Save () throws LMException {
+	public void Save () throws LMException {
 		Gson gson = new Gson();  
 		String jsonString = gson.toJson(this.licensesList);
         FileWriter fileWriter;

@@ -30,23 +30,6 @@ public class License {
 		// set to active only if no exception is thrown (inside verifySignature)
 	}
 	
-	/**
-	 * 
-	 * @param stationName
-	 * @param personInCharge
-	 * @param eMail
-	 * @param machineName
-	 * @param typeOfLicense
-	 * @param UUID
-	 * @param licenseSignature
-	 * @throws LMException
-	 */
-	public License (String stationName, String personInCharge, String eMail, String machineName, String typeOfLicense, String RequestDate, String UUID, String licenseSignature) throws LMException {
-		this.LicenseRequestData = new LicenseRequest (stationName, personInCharge, eMail, machineName, typeOfLicense, Long.parseLong(RequestDate), UUID);
-		this.signature = this.verifySignature(licenseSignature);
-		// set to active only if no exception is thrown (inside verifySignature)
-	}
-	
 	private String verifySignature (String signature) throws LMException {
 		// Format check for license format (length and hex values)
 		if (signature.length() != 64 || !signature.matches("-?[0-9a-fA-F]+")) {
@@ -163,20 +146,4 @@ public class License {
 						LicenseRequestData.getTypeofLicense() + ";" + LicenseRequestData.getUUID();
 		return result;
 	}
-	
-	public String licenseDataToJSONString() {
-		String result = "{\"Station Name\":\"" + LicenseRequestData.getStationName() + "\"" +
-						",\"Person in charge\":\"" + LicenseRequestData.getPersoninCharge() + "\"" +
-						",\"EMail\":\"" + LicenseRequestData.getEmail() + "\"" +
-						",\"Machine Name\":\"" + LicenseRequestData.getMachineName() + "\"" +
-						",\"Type of License\":\"" + LicenseRequestData.getTypeofLicense() + "\"" +
-						",\"UUID\":\"" + LicenseRequestData.getUUID() + "\"" +
-						",\"Signature\":\"" + this.signature + "\"" +
-						",\"Days\":\"" + this.days + "\"" +
-						"\"Active\":\"" + this.active + "\"}";
-					
-						
-		return result;
-	}
-
 }
